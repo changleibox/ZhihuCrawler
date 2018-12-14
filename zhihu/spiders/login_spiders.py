@@ -152,10 +152,14 @@ class LoginSpiders(BaseSpiders):
     def __get_token(response):
         # 获取token
         bs_obj = BeautifulSoup(response.body, 'html.parser')
-        token_data_json = json.loads(bs_obj.find('div', {'id': 'data'}).attrs['data-state'].encode('utf-8'))['token']
+        data = bs_obj.find('div', {'id': 'data'})
+        xsrf = None
+        xudid = None
+        if data is not None:
+            token_data_json = json.loads(data.attrs['data-state'].encode('utf-8'))['token']
 
-        xsrf = token_data_json['xsrf'] if 'xsrf' in token_data_json else ''
-        xudid = token_data_json['xUDID'] if 'xUDID' in token_data_json else ''
+            xsrf = token_data_json['xsrf'] if 'xsrf' in token_data_json else ''
+            xudid = token_data_json['xUDID'] if 'xUDID' in token_data_json else ''
         return xsrf, xudid
 
     @staticmethod
