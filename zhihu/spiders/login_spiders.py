@@ -8,6 +8,7 @@ import hmac
 import json
 
 import os
+import re
 
 from PIL import Image
 from bs4 import BeautifulSoup
@@ -153,12 +154,14 @@ class LoginSpiders(BaseSpiders):
         # 获取token
         bs_obj = BeautifulSoup(response.body, 'html.parser')
         data = bs_obj.find('div', {'id': 'data'})
-        xsrf = None
         xudid = None
         if data is not None:
-            token_data_json = json.loads(bs_obj.find('div', {'id': 'data'}).attrs['data-state'].encode('utf-8'))['token']
+            token_data_json = json.loads(data.attrs['data-state'].encode('utf-8'))['token']
             xsrf = token_data_json['xsrf'] if 'xsrf' in token_data_json else ''
             xudid = token_data_json['xUDID'] if 'xUDID' in token_data_json else ''
+        else:
+            cookies = response.headers.getlist('Set-Cookie')
+            xsrf = re.search(r'_xsrf=(.*?);', cookies[2]).group(1)
         return xsrf, xudid
 
     @staticmethod
